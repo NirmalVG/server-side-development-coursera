@@ -23,9 +23,7 @@ var passport = require("passport");
 var authenticate = require("./authenticate");
 
 const url = config.mongoUrl;
-const connect = mongoose.connect(url, {
-    useMongoClient: true,
-});
+const connect = mongoose.connect(url);
 
 connect.then(
     (db) => {
@@ -37,6 +35,17 @@ connect.then(
 );
 
 var app = express();
+
+app.all("*", (req, res, next) => {
+    if (req.secure) {
+        return next();
+    } else {
+        res.redirect(
+            307,
+            "https://" + req.hostname + ":" + app.get("secPort") + req.url
+        );
+    }
+});
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
